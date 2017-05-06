@@ -2028,7 +2028,7 @@ uint8_t Adafruit_NeoPixel::getBrightness(void) const {
 void Adafruit_NeoPixel::clear() {
   memset(pixels, 0, numBytes);
 }
-void Adafruit_NeoPixel_RGBW::commonCorrection(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w) {
+void Adafruit_NeoPixel::commonCorrection(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w) {
   uint8_t common = (*r < *g && *r < *b) ? *r : (*g < *b) ? *g : *b;
   *r -= common;
   *g -= common;
