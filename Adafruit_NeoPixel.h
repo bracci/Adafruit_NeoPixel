@@ -149,7 +149,8 @@ class Adafruit_NeoPixel {
     canShow(void) { return (micros() - endTime) >= 300L; }
 
  private:
-
+  void commonCorrection(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w);
+  
   boolean
 #ifdef NEO_KHZ400  // If 400 KHz NeoPixel support enabled...
     is800KHz,      // ...true if 800 KHz pixels
