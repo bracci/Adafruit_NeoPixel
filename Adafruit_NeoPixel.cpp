@@ -1845,19 +1845,23 @@ void Adafruit_NeoPixel::setPin(uint8_t p) {
 // Set pixel color from separate R,G,B components:
 void Adafruit_NeoPixel::setPixelColor(
  uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
-
+  uint8_t w = 0;
+  if(wOffset != rOffset) {
+  commonCorrection(&r, &g, &b, &w);
+  }
   if(n < numLEDs) {
     if(brightness) { // See notes in setBrightness()
       r = (r * brightness) >> 8;
       g = (g * brightness) >> 8;
       b = (b * brightness) >> 8;
+      w = (w * brightness) >> 8;
     }
     uint8_t *p;
     if(wOffset == rOffset) { // Is an RGB-type strip
       p = &pixels[n * 3];    // 3 bytes per pixel
     } else {                 // Is a WRGB-type strip
       p = &pixels[n * 4];    // 4 bytes per pixel
-      p[wOffset] = 0;        // But only R,G,B passed -- set W to 0
+      p[wOffset] = w;        // set W to common brightness
     }
     p[rOffset] = r;          // R,G,B always stored
     p[gOffset] = g;
@@ -1892,20 +1896,24 @@ void Adafruit_NeoPixel::setPixelColor(
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
   if(n < numLEDs) {
     uint8_t *p,
+      w = (uint8_t)(c >> 24),
       r = (uint8_t)(c >> 16),
       g = (uint8_t)(c >>  8),
       b = (uint8_t)c;
+    if((w == 0) && (wOffset != rOffset)) {
+      commonCorrection(&r, &g, &b, &w);
+    }
     if(brightness) { // See notes in setBrightness()
       r = (r * brightness) >> 8;
       g = (g * brightness) >> 8;
       b = (b * brightness) >> 8;
+      w = (w * brightness) >> 8;
     }
     if(wOffset == rOffset) {
       p = &pixels[n * 3];
     } else {
       p = &pixels[n * 4];
-      uint8_t w = (uint8_t)(c >> 24);
-      p[wOffset] = brightness ? ((w * brightness) >> 8) : w;
+      p[wOffset] = w;
     }
     p[rOffset] = r;
     p[gOffset] = g;
@@ -2019,4 +2027,11 @@ uint8_t Adafruit_NeoPixel::getBrightness(void) const {
 
 void Adafruit_NeoPixel::clear() {
   memset(pixels, 0, numBytes);
+}
+void Adafruit_NeoPixel_RGBW::commonCorrection(uint8_t* r, uint8_t* g, uint8_t* b, uint8_t* w) {
+  uint8_t common = (*r < *g && *r < *b) ? *r : (*g < *b) ? *g : *b;
+  *r -= common;
+  *g -= common;
+  *b -= common;
+  *w = common;
 }
